@@ -81,7 +81,10 @@ def angular_terms(Rca: float, ShfZ: Tensor, EtaA: Tensor, Zeta: Tensor,
     angles = torch.acos(0.95 * cos_angles)
 
     fcj12 = cutoff_cosine(distances12, Rca)
-    factor1 = ((1 + torch.cos(angles - ShfZ)) / 2) ** Zeta
+    
+    # use float_power instead of ** https://github.com/openmm/openmm-ml/issues/50
+    factor1 = torch.float_power( ((1 + torch.cos(angles - ShfZ)) / 2), Zeta).to(vectors12.dtype) 
+
     factor2 = torch.exp(-EtaA * (distances12.sum(0) / 2 - ShfA) ** 2)
     ret = 2 * factor1 * factor2 * fcj12.prod(0)
     # At this point, ret now has shape
